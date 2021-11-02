@@ -1,9 +1,9 @@
 class Product {
   Product({
-    this.name,
+    required this.name,
   });
 
-  String? name;
+  String name = '-';
 
   Product.fromJson(dynamic json) {
     name = json['title'];

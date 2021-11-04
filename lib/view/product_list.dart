@@ -105,7 +105,11 @@ class _ProductListViewState extends State<ProductListView> {
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  productInCart.removeWhere(
+                    (_, value) => value <= 0,
+                  );
+                },
                 child: const Text('Checkout'),
               ),
             )

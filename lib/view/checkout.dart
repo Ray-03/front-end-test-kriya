@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front_end_test_kriya/bloc/product_bloc.dart';
+import 'package:front_end_test_kriya/component/margined_elevated_button.dart';
 import 'package:front_end_test_kriya/component/shadow_container.dart';
 import 'package:front_end_test_kriya/model/product.dart';
 import 'package:front_end_test_kriya/view/product_list.dart';
@@ -69,24 +70,26 @@ class CheckoutView extends StatelessWidget {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      int totalVal = _prodInCart.values.reduce(
-                        (sum, element) => sum + element,
-                      );
-                      _productBloc.add(
-                        ProductUpdate(
-                          totalItemQty: totalVal,
-                        ),
-                      );
-                      Navigator.popUntil(context, (route) => false);
-                      Navigator.pushNamed(context, ProductListView.id);
-                    },
-                    child: const Text('Confirm checkout'),
-                  ),
-                )
+                MarginedElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  text: 'Back',
+                  strong: false,
+                ),
+                MarginedElevatedButton(
+                  onPressed: () {
+                    int totalVal = _prodInCart.values.reduce(
+                      (sum, element) => sum + element,
+                    );
+                    _productBloc.add(
+                      ProductUpdate(
+                        totalItemQty: totalVal,
+                      ),
+                    );
+                    Navigator.popUntil(context, (route) => false);
+                    Navigator.pushNamed(context, ProductListView.id);
+                  },
+                  text: 'Confirm checkout',
+                ),
               ],
             );
           },

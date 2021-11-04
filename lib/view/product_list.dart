@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front_end_test_kriya/bloc/product_bloc.dart';
+import 'package:front_end_test_kriya/component/margined_elevated_button.dart';
 import 'package:front_end_test_kriya/component/shadow_container.dart';
 import 'package:front_end_test_kriya/const.dart';
 import 'package:front_end_test_kriya/model/product.dart';
@@ -12,6 +13,7 @@ import 'package:pagination_view/pagination_view.dart';
 
 class ProductListView extends StatefulWidget {
   static String id = 'product_list_view';
+
   const ProductListView({Key? key}) : super(key: key);
 
   @override
@@ -119,33 +121,28 @@ class _ProductListViewState extends State<ProductListView> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Map<Product, int> _products = Map.from(productInCart);
-                    _products.removeWhere((key, value) => value <= 0);
-                    print(productInCart);
-                    print(_products);
-                    if (_products.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'You have to at least add 1 item before checkout',
-                          ),
+              MarginedElevatedButton(
+                onPressed: () {
+                  Map<Product, int> _products = Map.from(productInCart);
+                  _products.removeWhere((key, value) => value <= 0);
+                  if (_products.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'You have to at least add 1 item before checkout',
                         ),
-                      );
-                    } else {
-                      Navigator.pushNamed(
-                        context,
-                        CheckoutView.id,
-                        arguments: _products,
-                      );
-                    }
-                  },
-                  child: const Text('Checkout'),
-                ),
-              )
+                      ),
+                    );
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      CheckoutView.id,
+                      arguments: _products,
+                    );
+                  }
+                },
+                text: 'Checkout',
+              ),
             ],
           ),
         ),

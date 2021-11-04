@@ -6,6 +6,7 @@ class ShadowContainer extends StatelessWidget {
     required this.child,
   }) : super(key: key);
   final Widget child;
+
   @override
   Widget build(BuildContext context) {
     return Container(

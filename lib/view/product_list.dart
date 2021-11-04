@@ -1,12 +1,17 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:front_end_test_kriya/bloc/product_bloc.dart';
 import 'package:front_end_test_kriya/component/shadow_container.dart';
 import 'package:front_end_test_kriya/const.dart';
 import 'package:front_end_test_kriya/model/product.dart';
+import 'package:front_end_test_kriya/view/checkout.dart';
+import 'package:http/http.dart' as _http;
 import 'package:pagination_view/pagination_view.dart';
-import 'package:http/http.dart' as Http;
 
 class ProductListView extends StatefulWidget {
+  static String id = 'product_list_view';
   const ProductListView({Key? key}) : super(key: key);
 
   @override
@@ -14,12 +19,11 @@ class ProductListView extends StatefulWidget {
 }
 
 class _ProductListViewState extends State<ProductListView> {
-  int totalProductQty = 0;
   int page = 1;
-  Map<String, int> productInCart = {};
+  Map<Product, int> productInCart = {};
 
   Future<List<Product>> pageFetch(int currListSize) async {
-    Http.Response json = await Http.get(
+    _http.Response json = await _http.get(
       Uri.parse('$baseUrl?$paginationArgs=$page'),
     );
     List<dynamic> jsonData = jsonDecode(json.body);
@@ -30,7 +34,7 @@ class _ProductListViewState extends State<ProductListView> {
           jsonData[index],
           currListSize + index,
         );
-        productInCart[_prod.productId] = 0;
+        productInCart[_prod] = 0;
         return _prod;
       },
     );
@@ -44,76 +48,106 @@ class _ProductListViewState extends State<ProductListView> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Total Product qty = $totalProductQty'),
+          title: BlocBuilder<ProductBloc, ProductState>(
+            builder: (context, state) {
+              if (state is ProductChanged) {
+                return Text('Total Product qty = ${state.value}');
+              } else if (state is ProductInitial) {
+                return const Text('Total Product qty = -');
+              }
+              return const Text('Error');
+            },
+          ),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: PaginationView(
-                pageFetch: pageFetch,
-                itemBuilder:
-                    (BuildContext context, Product product, int index) {
-                  return ShadowContainer(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          product.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                              tooltip: 'Remove',
-                              onPressed: () => setState(
-                                () => (() {
-                                  if (productInCart[product.productId]! > 0) {
-                                    productInCart[product.productId] =
-                                        productInCart[product.productId]! - 1;
-                                  }
-                                }()),
+        body: BlocListener<ProductBloc, ProductState>(
+          listener: (context, state) {
+            // TODO: implement listener
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: PaginationView(
+                  pageFetch: pageFetch,
+                  itemBuilder:
+                      (BuildContext context, Product product, int index) {
+                    return ShadowContainer(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            product.name,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                tooltip: 'Remove',
+                                onPressed: () => setState(
+                                  () => (() {
+                                    if (productInCart[product]! > 0) {
+                                      productInCart[product] =
+                                          productInCart[product]! - 1;
+                                    }
+                                  }()),
+                                ),
+                                icon: const Icon(Icons.remove),
                               ),
-                              icon: const Icon(Icons.remove),
-                            ),
-                            Text(
-                              productInCart[product.productId].toString(),
-                            ),
-                            IconButton(
-                              tooltip: 'Add',
-                              onPressed: () => setState(
-                                () => productInCart[product.productId] =
-                                    productInCart[product.productId]! + 1,
+                              Text(
+                                productInCart[product].toString(),
                               ),
-                              icon: const Icon(Icons.add),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                onError: (dynamic error) => const Center(
-                  child: Text('Some error occured'),
-                ),
-                onEmpty: const Center(
-                  child: Text('Sorry! This is empty'),
+                              IconButton(
+                                tooltip: 'Add',
+                                onPressed: () => setState(
+                                  () => productInCart[product] =
+                                      productInCart[product]! + 1,
+                                ),
+                                icon: const Icon(Icons.add),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onError: (dynamic error) => const Center(
+                    child: Text('Some error occured'),
+                  ),
+                  onEmpty: const Center(
+                    child: Text('Sorry! This is empty'),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  productInCart.removeWhere(
-                    (_, value) => value <= 0,
-                  );
-                },
-                child: const Text('Checkout'),
-              ),
-            )
-          ],
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Map<Product, int> _products = Map.from(productInCart);
+                    _products.removeWhere((key, value) => value <= 0);
+                    print(productInCart);
+                    print(_products);
+                    if (_products.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'You have to at least add 1 item before checkout',
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.pushNamed(
+                        context,
+                        CheckoutView.id,
+                        arguments: _products,
+                      );
+                    }
+                  },
+                  child: const Text('Checkout'),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

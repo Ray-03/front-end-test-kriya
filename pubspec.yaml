@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   pagination_view: ^2.0.0
   http: ^0.13.4
+  flutter_bloc: ^7.3.2
+  equatable: ^2.0.3
 
 dev_dependencies:
   flutter_test:

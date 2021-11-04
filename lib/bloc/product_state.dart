@@ -13,6 +13,7 @@ class ProductChanged extends ProductState {
   final int value;
 
   const ProductChanged({required this.value});
+
   @override
   List<Object?> get props => [value];
 }

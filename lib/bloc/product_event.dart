@@ -6,7 +6,9 @@ abstract class ProductEvent extends Equatable {
 
 class ProductUpdate extends ProductEvent {
   const ProductUpdate({required this.totalItemQty});
+
   final int totalItemQty;
+
   @override
   // TODO: implement props
   List<int> get props => [totalItemQty];

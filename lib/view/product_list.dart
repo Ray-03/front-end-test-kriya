@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front_end_test_kriya/bloc/product_bloc.dart';
+import 'package:front_end_test_kriya/component/margined_elevated_button.dart';
 import 'package:front_end_test_kriya/component/shadow_container.dart';
 import 'package:front_end_test_kriya/const.dart';
 import 'package:front_end_test_kriya/model/product.dart';
@@ -12,6 +13,7 @@ import 'package:pagination_view/pagination_view.dart';
 
 class ProductListView extends StatefulWidget {
   static String id = 'product_list_view';
+
   const ProductListView({Key? key}) : super(key: key);
 
   @override
@@ -23,10 +25,12 @@ class _ProductListViewState extends State<ProductListView> {
   Map<Product, int> productInCart = {};
 
   Future<List<Product>> pageFetch(int currListSize) async {
+    //GET json from url
     _http.Response json = await _http.get(
       Uri.parse('$baseUrl?$paginationArgs=$page'),
     );
     List<dynamic> jsonData = jsonDecode(json.body);
+    //create list of Product from [jsonData]
     final List<Product> nextProductsList = List.generate(
       jsonData.length,
       (int index) {
@@ -38,9 +42,37 @@ class _ProductListViewState extends State<ProductListView> {
         return _prod;
       },
     );
-
     page = (currListSize / 10).round();
     return jsonData.isEmpty ? [] : nextProductsList;
+  }
+
+  Row _buildAddRemoveProductButton(Product product) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+          tooltip: 'Remove',
+          onPressed: () => setState(
+            () => (() {
+              if (productInCart[product]! > 0) {
+                productInCart[product] = productInCart[product]! - 1;
+              }
+            }()),
+          ),
+          icon: const Icon(Icons.remove),
+        ),
+        Text(
+          productInCart[product].toString(),
+        ),
+        IconButton(
+          tooltip: 'Add',
+          onPressed: () => setState(
+            () => productInCart[product] = productInCart[product]! + 1,
+          ),
+          icon: const Icon(Icons.add),
+        ),
+      ],
+    );
   }
 
   @override
@@ -66,6 +98,7 @@ class _ProductListViewState extends State<ProductListView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              //list of available products
               Expanded(
                 child: PaginationView(
                   pageFetch: pageFetch,
@@ -79,34 +112,8 @@ class _ProductListViewState extends State<ProductListView> {
                             product.name,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                tooltip: 'Remove',
-                                onPressed: () => setState(
-                                  () => (() {
-                                    if (productInCart[product]! > 0) {
-                                      productInCart[product] =
-                                          productInCart[product]! - 1;
-                                    }
-                                  }()),
-                                ),
-                                icon: const Icon(Icons.remove),
-                              ),
-                              Text(
-                                productInCart[product].toString(),
-                              ),
-                              IconButton(
-                                tooltip: 'Add',
-                                onPressed: () => setState(
-                                  () => productInCart[product] =
-                                      productInCart[product]! + 1,
-                                ),
-                                icon: const Icon(Icons.add),
-                              ),
-                            ],
-                          ),
+                          //add-remove product button
+                          _buildAddRemoveProductButton(product),
                         ],
                       ),
                     );
@@ -119,33 +126,29 @@ class _ProductListViewState extends State<ProductListView> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Map<Product, int> _products = Map.from(productInCart);
-                    _products.removeWhere((key, value) => value <= 0);
-                    print(productInCart);
-                    print(_products);
-                    if (_products.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'You have to at least add 1 item before checkout',
-                          ),
+              //checkout button
+              MarginedElevatedButton(
+                onPressed: () {
+                  Map<Product, int> _products = Map.from(productInCart);
+                  _products.removeWhere((key, value) => value <= 0);
+                  if (_products.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'You have to at least add 1 item before checkout',
                         ),
-                      );
-                    } else {
-                      Navigator.pushNamed(
-                        context,
-                        CheckoutView.id,
-                        arguments: _products,
-                      );
-                    }
-                  },
-                  child: const Text('Checkout'),
-                ),
-              )
+                      ),
+                    );
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      CheckoutView.id,
+                      arguments: _products,
+                    );
+                  }
+                },
+                text: 'Checkout',
+              ),
             ],
           ),
         ),

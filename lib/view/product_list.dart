@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:front_end_test_kriya/component/shadow_container.dart';
 import 'package:front_end_test_kriya/const.dart';
 import 'package:front_end_test_kriya/model/product.dart';
+import 'package:front_end_test_kriya/view/checkout.dart';
 import 'package:pagination_view/pagination_view.dart';
 import 'package:http/http.dart' as Http;
 
 class ProductListView extends StatefulWidget {
+  static String id = 'product_list_view';
   const ProductListView({Key? key}) : super(key: key);
 
   @override
@@ -109,6 +111,7 @@ class _ProductListViewState extends State<ProductListView> {
                   productInCart.removeWhere(
                     (_, value) => value <= 0,
                   );
+                  Navigator.pushNamed(context, CheckoutView.id);
                 },
                 child: const Text('Checkout'),
               ),

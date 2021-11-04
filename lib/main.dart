@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:front_end_test_kriya/route.dart';
 import 'package:front_end_test_kriya/view/product_list.dart';
 
 void main() {
@@ -15,7 +16,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const ProductListView(),
+      // home: const ProductListView(),
+      routes: route,
+      initialRoute: ProductListView.id,
     );
   }
 }

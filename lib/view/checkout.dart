@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:front_end_test_kriya/component/shadow_container.dart';
 
 class CheckoutView extends StatelessWidget {
+  static String id = 'checkout_view';
   const CheckoutView({Key? key}) : super(key: key);
 
   @override

@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:front_end_test_kriya/component/shadow_container.dart';
 import 'package:front_end_test_kriya/const.dart';
 import 'package:front_end_test_kriya/model/product.dart';
 import 'package:pagination_view/pagination_view.dart';
@@ -14,8 +14,9 @@ class ProductListView extends StatefulWidget {
 }
 
 class _ProductListViewState extends State<ProductListView> {
-  int page = 1;
   int totalProductQty = 0;
+  int page = 1;
+  Map<String, int> productInCart = {};
 
   Future<List<Product>> pageFetch(int currListSize) async {
     Http.Response json = await Http.get(
@@ -24,11 +25,16 @@ class _ProductListViewState extends State<ProductListView> {
     List<dynamic> jsonData = jsonDecode(json.body);
     final List<Product> nextProductsList = List.generate(
       jsonData.length,
-      (int index) => Product.fromJson(
-        jsonData[index],
-        currListSize + index,
-      ),
+      (int index) {
+        Product _prod = Product.fromJson(
+          jsonData[index],
+          currListSize + index,
+        );
+        productInCart[_prod.productId] = 0;
+        return _prod;
+      },
     );
+
     page = (currListSize / 10).round();
     return jsonData.isEmpty ? [] : nextProductsList;
   }
@@ -40,20 +46,63 @@ class _ProductListViewState extends State<ProductListView> {
         appBar: AppBar(
           title: Text('Total Product qty = $totalProductQty'),
         ),
-        body: PaginationView(
-          pullToRefresh: true,
-          itemBuilder: (BuildContext context, Product product, int index) {
-            return ListTile(
-              title: Text(product.name),
-            );
-          },
-          pageFetch: pageFetch,
-          onError: (dynamic error) => const Center(
-            child: Text('Some error occured'),
-          ),
-          onEmpty: const Center(
-            child: Text('Sorry! This is empty'),
-          ),
+        body: Column(
+          children: [
+            Expanded(
+              child: PaginationView(
+                pageFetch: pageFetch,
+                itemBuilder:
+                    (BuildContext context, Product product, int index) {
+                  return ShadowContainer(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          product.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              tooltip: 'Remove',
+                              onPressed: () => setState(
+                                () => (() {
+                                  if (productInCart[product.productId]! > 0) {
+                                    productInCart[product.productId] =
+                                        productInCart[product.productId]! - 1;
+                                  }
+                                }()),
+                              ),
+                              icon: const Icon(Icons.remove),
+                            ),
+                            Text(
+                              productInCart[product.productId].toString(),
+                            ),
+                            IconButton(
+                              tooltip: 'Add',
+                              onPressed: () => setState(
+                                () => productInCart[product.productId] =
+                                    productInCart[product.productId]! + 1,
+                              ),
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                onError: (dynamic error) => const Center(
+                  child: Text('Some error occured'),
+                ),
+                onEmpty: const Center(
+                  child: Text('Sorry! This is empty'),
+                ),
+              ),
+            ),
+            //todo: create checkout button
+          ],
         ),
       ),
     );

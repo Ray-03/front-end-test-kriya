@@ -1,11 +1,11 @@
 class Product {
   Product({
     required this.name,
-    this.productId,
+    required this.productId,
   });
 
   String name = '-';
-  String? productId;
+  String productId = '-';
 
   Product.fromJson(dynamic json, int index) {
     name = json['title'];

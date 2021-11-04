@@ -47,6 +47,7 @@ class _ProductListViewState extends State<ProductListView> {
           title: Text('Total Product qty = $totalProductQty'),
         ),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: PaginationView(
@@ -101,7 +102,13 @@ class _ProductListViewState extends State<ProductListView> {
                 ),
               ),
             ),
-            //todo: create checkout button
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ElevatedButton(
+                onPressed: () {},
+                child: const Text('Checkout'),
+              ),
+            )
           ],
         ),
       ),

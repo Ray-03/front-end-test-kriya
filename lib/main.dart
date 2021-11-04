@@ -16,11 +16,11 @@ class MyApp extends StatelessWidget {
     return BlocProvider(
       create: (context) => ProductBloc(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Front End Test Kriya',
         theme: ThemeData(
           primarySwatch: Colors.amber,
         ),
-        // home: const ProductListView(),
         routes: route,
         initialRoute: ProductListView.id,
       ),
